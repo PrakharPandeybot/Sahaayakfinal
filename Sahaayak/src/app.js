@@ -20,32 +20,111 @@ const workerTrainingRoutes = require("./routes/workerTraining.routes");
 
 const app = express();
 
-app.use(cors());
+
+// ===============================
+// CORS
+// ===============================
+
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+    ],
+  })
+);
+
+
+// ===============================
+// MIDDLEWARE
+// ===============================
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.use("/api/auth", authRoutes);
-app.use("/api/workers", workerRoutes);
-app.use("/api/services", serviceRoutes);
-app.use("/api/bookings", bookingRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/payments", paymentRoutes);
-app.use("/api/welfare", welfareRoutes);
-app.use("/api/schemes", schemeRoutes);
-app.use("/api/reviews", reviewRoutes);
-app.use("/api/insurance", insuranceRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/notifications", notificationRoutes);
-app.use("/api/worker-salaries", workerSalaryRoutes);
-app.use("/api/training", trainingRoutes);
-app.use("/api/worker-trainings", workerTrainingRoutes);
 
+// ===============================
+// HEALTH CHECK
+// ===============================
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     success: true,
-    message: "Sahaayak backend is running"
+    message: "Sahaayak backend is running",
   });
 });
+
+
+// ===============================
+// API ROUTES
+// ===============================
+
+app.use("/api/auth", authRoutes);
+
+app.use("/api/workers", workerRoutes);
+
+app.use("/api/services", serviceRoutes);
+
+app.use("/api/bookings", bookingRoutes);
+
+app.use("/api/admin", adminRoutes);
+
+app.use("/api/payments", paymentRoutes);
+
+app.use("/api/welfare", welfareRoutes);
+
+app.use("/api/schemes", schemeRoutes);
+
+app.use("/api/reviews", reviewRoutes);
+
+app.use("/api/insurance", insuranceRoutes);
+
+app.use("/api/users", userRoutes);
+
+app.use("/api/notifications", notificationRoutes);
+
+app.use("/api/worker-salaries", workerSalaryRoutes);
+
+app.use("/api/training", trainingRoutes);
+
+app.use("/api/worker-trainings", workerTrainingRoutes);
+
+
+// ===============================
+// 404 HANDLER
+// ===============================
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route not found: ${req.method} ${req.originalUrl}`,
+  });
+});
+
+
+// ===============================
+// ERROR HANDLER
+// ===============================
+
+app.use((err, req, res, next) => {
+  console.error("API ERROR:", err);
+
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal server error",
+  });
+});
+
 
 module.exports = app;
